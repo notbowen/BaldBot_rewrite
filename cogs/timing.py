@@ -24,7 +24,7 @@ class Timing(commands.Cog):
         # If no member argument was supplied, set member as the user who called the command
         if member is None:
             member = interaction.user
-        
+
         join_date = member.joined_at
 
         days = await self.getDays(join_date)
