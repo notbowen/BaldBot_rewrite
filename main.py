@@ -3,15 +3,12 @@
 # Date: 9/11/22
 
 # Libraries
-import asyncio
 import os
 import random
-import time
 import json
 
 import discord
 from discord.ext import commands
-from discord import app_commands
 
 import logger
 import constants
@@ -42,7 +39,7 @@ bad_words = [
         "Orh hor say F word I tell mummy",
         "Orh hor say F word u naughty naughty u teasing me",
     ]),
-    BadWord("Chink word", ["chink", "cheenk", "ching"], [
+    BadWord("Chink word", ["chink", "cheenk"], [
         "Chink, a English-language ethnic slur usually referring to a person of Chinese descent.",
         "A chink is usually defined from the person's facial appearance, such as having small eyes. (Aidan)",
         'The word that u have just used (Chink), is thought to have originated from ancient China as the Qing dynasty is sometimes pronounced as "Chink" in America',
@@ -63,7 +60,7 @@ bad_words = [
             [
                 "eww tryhard go and study medicine lah",
                 "tryhard.exe",
-            ]),
+    ]),
     BadWord("Liverpool", ["lfc", "liverpool", "scouse", "scouser"], [
         "allez allez allez", "premier league champions 2021/22",
         "corner taken quickly ORIGIII", "mo salad"
@@ -79,12 +76,13 @@ class BaldBot(commands.Bot):
             command_prefix="b",
             intents=discord.Intents.all(),
             application_id=constants.APPLICATION_ID
-        ) 
+        )
 
     async def setup_hook(self) -> None:
         """ Load the cogs """
         for file in os.listdir("./cogs"):
-            if not file.endswith(".py"): continue  # Ignore non-pythonic files
+            if not file.endswith(".py"):
+                continue  # Ignore non-pythonic files
             await self.load_extension(f"cogs.{file[:-3]}")
         await bot.tree.sync(guild=discord.Object(id=constants.GUILD_ID))
 
@@ -99,10 +97,11 @@ class BaldBot(commands.Bot):
 
         role = discord.utils.get(member.guild.roles, name="Bald")
         await member.add_roles(role)
-        
+
     async def on_message(self, message: discord.Message) -> None:
         """ Checks for bad words before processing the command """
         # TODO: Clean this code?
+        # TODO: Implement regex search
         if message.author.bot:
             return
 
