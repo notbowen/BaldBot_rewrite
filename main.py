@@ -81,7 +81,9 @@ class BaldBot(commands.Bot):
 
     async def setup_hook(self) -> None:
         """ Load the cogs """
-        for file in os.listdir("./cogs"):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        cogs_dir = os.path.join(current_dir, "cogs")
+        for file in os.listdir(cogs_dir):
             if not file.endswith(".py"):
                 continue  # Ignore non-pythonic files
             await self.load_extension(f"cogs.{file[:-3]}")
