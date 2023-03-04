@@ -11,6 +11,8 @@ from discord.ext import commands
 import json
 import typing
 import requests
+import shlex
+import subprocess
 
 from mcipc.query import Client
 
@@ -111,7 +113,8 @@ class Minecraft(commands.Cog):
             return await interaction.response.send_message(":x: Server is already running!")
         
         # Start server
-        os.system("screen -S minecraft && cd ~/mc_server && ./start.sh")
+        command = "screen -dmS minecraft cd ~/mc_server && ./start.sh > server.log"
+        subprocess.Popen(shlex.split(command), start_new_session=True)
 
         await interaction.response.send_message("IMPORTANT NOTE: Please run `/server_ip` after the server starts, as the original IP will be unavailable till I change it.\n:white_check_mark: Server is being started!")
 
