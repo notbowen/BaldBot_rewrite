@@ -3,6 +3,7 @@
 # Date: 2/3/23
 
 # Libraries
+import os
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -50,6 +51,9 @@ class Minecraft(commands.Cog):
         whitelisted_data.append({"name": player, "uuid": uuid})
         with open("whitelist.json", "w") as f:
             json.dump(whitelisted_data, f, indent=4)
+
+        # Send whitelist reload command to server
+        os.system("screen -S minecraft -p 0 -X stuff \"whitelist reload^M\"")
 
         # Create response embed
         embed = discord.Embed(title="Whitelisted Player", color=0x1FFF35 )
