@@ -95,9 +95,25 @@ class Minecraft(commands.Cog):
             lines = f.readlines()
 
             # Extract IP from 7th line
-            backup_ip = lines[6].split(" ")[-1].split("//")[-1]
+            try:
+                backup_ip = lines[6].split(" ")[-1].split("//")[-1]
+            except:
+                await interaction.response.send_message(":x: Server is starting / not running!")
+                return
 
         await interaction.response.send_message("IP: `mc.hubowen.dev`\nBackup IP: `" + backup_ip + "`")
+
+    # Start server
+    @app_commands.command(name="start_server", description="Starts the server")
+    async def start_server(self, interaction: discord.Interaction) -> None:
+        # Check if server screen is already running
+        if os.system("screen -ls | grep -q minecraft") == 0:
+            return await interaction.response.send_message(":x: Server is already running!")
+        
+        # Start server
+        os.system("screen -S minecraft && cd ~/mc_server && ./start.sh")
+
+        await interaction.response.send_message("IMPORTANT NOTE: Please run `/server_ip` after the server starts, as the original IP will be unavailable till I change it.\n:white_check_mark: Server is being started!")
 
 
 async def setup(bot: commands.Bot) -> None:
