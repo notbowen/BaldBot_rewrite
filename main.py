@@ -78,11 +78,11 @@ class BaldBot(commands.Bot):
             intents=discord.Intents.all(),
             application_id=constants.APPLICATION_ID
         )
+        self.current_dir = os.path.dirname(os.path.abspath(__file__))
 
     async def setup_hook(self) -> None:
         """ Load the cogs """
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        cogs_dir = os.path.join(current_dir, "cogs")
+        cogs_dir = os.path.join(self.current_dir, "cogs")
         for file in os.listdir(cogs_dir):
             if not file.endswith(".py"):
                 continue  # Ignore non-pythonic files
@@ -108,7 +108,8 @@ class BaldBot(commands.Bot):
         if message.author.bot:
             return
 
-        with open("word_count.json", "r") as f:
+        word_count_dir = os.path.join(self.current_dir, "word_count.json")
+        with open(word_count_dir, "r") as f:
             data = json.load(f)
             f.close()
 
