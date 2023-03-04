@@ -70,7 +70,9 @@ class Minecraft(commands.Cog):
         embed.add_field(name="MOTD", value=full_stats["host_name"], inline=False)
         embed.add_field(name="Game Version", value=full_stats["version"], inline=False)
         embed.add_field(name="Players", value=str(full_stats["num_players"]) + "/" + str(full_stats["max_players"]), inline=False)
-        embed.add_field(name="Player Names", value="\n".join(full_stats["players"]), inline=False)
+
+        if full_stats["num_players"] > 0:
+            embed.add_field(name="Players", value="\n".join(full_stats["players"]), inline=False)
 
         await interaction.response.send_message(embed=embed)
 
