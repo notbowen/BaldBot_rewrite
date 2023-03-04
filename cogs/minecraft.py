@@ -42,9 +42,14 @@ class Minecraft(commands.Cog):
             if res.status_code == 204:
                 return await interaction.response.send_message(":x: Player does not exist")
             uuid = res.json()["id"]
+
+            # Convert UUID to correct format
+            uuid = uuid[:8] + "-" + uuid[8:12] + "-" + uuid[12:16] + "-" + uuid[16:20] + "-" + uuid[20:]
         
         # Add player to whitelist.json file
         whitelisted_data.append({"name": player, "uuid": uuid})
+        with open("whitelist.json", "w") as f:
+            json.dump(whitelisted_data, f, indent=4)
 
         # Create response embed
         embed = discord.Embed(title="Whitelisted Player", color=0x1FFF35 )
