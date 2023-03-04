@@ -85,6 +85,20 @@ class Minecraft(commands.Cog):
 
         await interaction.response.send_message(embed=embed)
 
+    # Get IP of server
+    @app_commands.command(name="server_ip", description="Gets the IP of the server")
+    async def server_ip(self, interaction: discord.Interaction) -> None:
+        """Gets the IP of the server"""
+
+        # Read server.log
+        with open("server.log", "r") as f:
+            lines = f.readlines()
+
+            # Extract IP from 7th line
+            backup_ip = lines[6].split(" ")[-1].split("//")[-1]
+
+        await interaction.response.send_message("IP: `mc.hubowen.dev`\nBackup IP: `" + backup_ip + "`")
+
 
 async def setup(bot: commands.Bot) -> None:
     """Setup cog on BaldBot"""
