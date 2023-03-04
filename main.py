@@ -129,7 +129,7 @@ class BaldBot(commands.Bot):
         await bot.process_commands(message)
 
 # Init keep alive
-keep_alive()
+# keep_alive()
 
 # Init and run bot
 bot = BaldBot()
