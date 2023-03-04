@@ -92,6 +92,10 @@ class Minecraft(commands.Cog):
     async def server_ip(self, interaction: discord.Interaction) -> None:
         """Gets the IP of the server"""
 
+        # Check if server is running
+        if os.system("screen -ls | grep -q minecraft") != 0:
+            return await interaction.response.send_message(":x: Server is not running!")
+
         # Read server.log
         with open("server.log", "r") as f:
             lines = f.readlines()
