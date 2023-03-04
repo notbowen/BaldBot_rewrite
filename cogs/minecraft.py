@@ -113,7 +113,7 @@ class Minecraft(commands.Cog):
             return await interaction.response.send_message(":x: Server is already running!")
         
         # Start server
-        command = "screen -dmS ~/start.sh"
+        command = "screen -dmS minecraft bash -c \"cd ~; ./start.sh\""
         subprocess.Popen(shlex.split(command), start_new_session=True)
 
         await interaction.response.send_message("IMPORTANT NOTE: Please run `/server_ip` after the server starts, as the original IP will be unavailable till I change it.\n:white_check_mark: Server is being started!")
