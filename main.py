@@ -125,7 +125,7 @@ class BaldBot(commands.Bot):
                     await message.channel.send(random.choice(swear.responses))
                     await message.channel.send(swear.name + " count: " + str(data[swear.name]))
 
-        with open("word_count.json", "w") as f:
+        with open(word_count_dir, "w") as f:
             json.dump(data, f, indent=4)
             f.close()
 
