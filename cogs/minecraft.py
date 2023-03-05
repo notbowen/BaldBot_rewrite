@@ -41,7 +41,7 @@ class Minecraft(commands.Cog):
         
         # Retrieve UUID of player if not provided
         if uuid is None:
-            if not self.is_online_mode():
+            if self.is_online_mode():
                 # Get UUID from Mojang API
                 url = "https://api.mojang.com/users/profiles/minecraft/" + player
                 res = requests.get(url)
