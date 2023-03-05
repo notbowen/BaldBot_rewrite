@@ -3,6 +3,7 @@
 # Date: 2/3/23
 
 # Libraries
+import hashlib
 import os
 import discord
 from discord import app_commands
@@ -38,13 +39,28 @@ class Minecraft(commands.Cog):
         if player in usernames:
             return await interaction.response.send_message(":x: Player is already whitelisted")
         
-        # Retrieve UUID of player from Mojang API
+        # Retrieve UUID of player if not provided
         if uuid is None:
-            url = "https://api.mojang.com/users/profiles/minecraft/" + player
-            res = requests.get(url)
-            if res.status_code == 204:
-                return await interaction.response.send_message(":x: Player does not exist")
-            uuid = res.json()["id"]
+            if not self.is_online_mode():
+                # Get UUID from Mojang API
+                url = "https://api.mojang.com/users/profiles/minecraft/" + player
+                res = requests.get(url)
+                if res.status_code == 204:
+                    return await interaction.response.send_message(":x: Player does not exist")
+                uuid = res.json()["id"]
+            else:
+                # Generate UUID from player name
+                # Source: https://gist.github.com/Nikdoge/474f74688b52865bf8d682a97fd4f2fe#file-minecraft_offline_uuid-py-L19
+                string = "OfflinePlayer:" + player
+                hash = hashlib.md5(string.encode('utf-8')).digest()
+                byte_array = [byte for byte in hash]
+                #set the version to 3 -> Name based md5 hash
+                byte_array[6] = hash[6] & 0x0f | 0x30
+                #IETF variant
+                byte_array[8] = hash[8] & 0x3f | 0x80
+
+                hash_modified = bytes(byte_array)
+                uuid = hash_modified.hex()
 
             # Convert UUID to correct format
             uuid = uuid[:8] + "-" + uuid[8:12] + "-" + uuid[12:16] + "-" + uuid[16:20] + "-" + uuid[20:]
@@ -121,6 +137,16 @@ class Minecraft(commands.Cog):
         subprocess.Popen(shlex.split(command), start_new_session=True)
 
         await interaction.response.send_message("IMPORTANT NOTE: Please run `/server_ip` after the server starts, as the original IP will be unavailable till I change it.\n:white_check_mark: Server is being started!")
+
+    # Helper function to check if server is in online mode
+    def is_online_mode(self) -> bool:
+        """Checks if server is in online mode"""
+        with open("server.properties", "r") as f:
+            lines = f.readlines()
+            for line in lines:
+                if line.startswith("online-mode="):
+                    return line.split("=")[-1].strip() == "true"
+        return None
 
 
 async def setup(bot: commands.Bot) -> None:
