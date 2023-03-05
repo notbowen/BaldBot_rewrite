@@ -80,6 +80,31 @@ class Minecraft(commands.Cog):
 
         await interaction.response.send_message(f"Whitelisted `{player}`\nUUID: `{uuid}`")
 
+    # Remove player from whitelist
+    @app_commands.command(name="unwhitelist", description="Removes player from whitelist")
+    async def unwhitelist(self, interaction: discord.Interaction, player: str) -> None:
+        """Removes player from whitelist"""
+
+        # Open whitelist.json file and load usernames
+        with open("whitelist.json", "r") as f:
+            whitelisted_data = json.load(f)
+            usernames = [user["name"] for user in whitelisted_data]
+
+        # Check if player is already whitelisted
+        if player not in usernames:
+            await interaction.response.send_message(":x: Player is not whitelisted")
+            return 
+        
+        # Remove player from whitelist.json file
+        whitelisted_data = [user for user in whitelisted_data if user["name"] != player]
+        with open("whitelist.json", "w") as f:
+            json.dump(whitelisted_data, f, indent=4)
+
+        # Send whitelist reload command to server
+        os.system("screen -S minecraft -p 0 -X stuff \"whitelist reload^M\"")
+
+        await interaction.response.send_message(f"Removed `{player}` from whitelist")
+
     @app_commands.command(name="server_stats", description="Gets stats of the minecraft server")
     async def server_stats(self, interaction: discord.Interaction) -> None:
         """Gets the stats of the server"""
