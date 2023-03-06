@@ -3,11 +3,14 @@
 # Date: 2/3/23
 
 # Libraries
-import hashlib
-import os
 import discord
 from discord import app_commands
 from discord.ext import commands
+
+import hashlib
+import os
+import threading
+import time
 
 import json
 import typing
@@ -21,6 +24,8 @@ import constants
 from balding_functions import random_color
 
 # Minecraft Class
+
+
 class Minecraft(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         """Initialise cog with given arguments"""
@@ -38,7 +43,7 @@ class Minecraft(commands.Cog):
         # Check if player is already whitelisted
         if player in usernames:
             return await interaction.response.send_message(":x: Player is already whitelisted")
-        
+
         # Retrieve UUID of player if not provided
         if uuid is None:
             if self.is_online_mode():
@@ -54,17 +59,18 @@ class Minecraft(commands.Cog):
                 string = "OfflinePlayer:" + player
                 hash = hashlib.md5(string.encode('utf-8')).digest()
                 byte_array = [byte for byte in hash]
-                #set the version to 3 -> Name based md5 hash
+                # set the version to 3 -> Name based md5 hash
                 byte_array[6] = hash[6] & 0x0f | 0x30
-                #IETF variant
+                # IETF variant
                 byte_array[8] = hash[8] & 0x3f | 0x80
 
                 hash_modified = bytes(byte_array)
                 uuid = hash_modified.hex()
 
             # Convert UUID to correct format
-            uuid = uuid[:8] + "-" + uuid[8:12] + "-" + uuid[12:16] + "-" + uuid[16:20] + "-" + uuid[20:]
-        
+            uuid = uuid[:8] + "-" + uuid[8:12] + "-" + \
+                uuid[12:16] + "-" + uuid[16:20] + "-" + uuid[20:]
+
         # Add player to whitelist.json file
         whitelisted_data.append({"name": player, "uuid": uuid})
         with open("whitelist.json", "w") as f:
@@ -74,7 +80,7 @@ class Minecraft(commands.Cog):
         os.system("screen -S minecraft -p 0 -X stuff \"whitelist reload^M\"")
 
         # Create response embed
-        embed = discord.Embed(title="Whitelisted Player", color=0x1FFF35 )
+        embed = discord.Embed(title="Whitelisted Player", color=0x1FFF35)
         embed.add_field(name="Player", value=player, inline=False)
         embed.add_field(name="UUID", value=uuid, inline=False)
 
@@ -93,10 +99,11 @@ class Minecraft(commands.Cog):
         # Check if player is already whitelisted
         if player not in usernames:
             await interaction.response.send_message(":x: Player is not whitelisted")
-            return 
-        
+            return
+
         # Remove player from whitelist.json file
-        whitelisted_data = [user for user in whitelisted_data if user["name"] != player]
+        whitelisted_data = [
+            user for user in whitelisted_data if user["name"] != player]
         with open("whitelist.json", "w") as f:
             json.dump(whitelisted_data, f, indent=4)
 
@@ -116,15 +123,19 @@ class Minecraft(commands.Cog):
         except:
             await interaction.response.send_message(":x: Server is not running")
             return
-        
+
         # Create embed
         embed = discord.Embed(title="Server Stats", color=random_color())
-        embed.add_field(name="MOTD", value=full_stats["host_name"], inline=False)
-        embed.add_field(name="Game Version", value=full_stats["version"], inline=False)
-        embed.add_field(name="Players", value=str(full_stats["num_players"]) + "/" + str(full_stats["max_players"]), inline=False)
+        embed.add_field(
+            name="MOTD", value=full_stats["host_name"], inline=False)
+        embed.add_field(name="Game Version",
+                        value=full_stats["version"], inline=False)
+        embed.add_field(name="Players", value=str(
+            full_stats["num_players"]) + "/" + str(full_stats["max_players"]), inline=False)
 
         if full_stats["num_players"] > 0:
-            embed.add_field(name="Players", value="\n".join(full_stats["players"]), inline=False)
+            embed.add_field(name="Players", value="\n".join(
+                full_stats["players"]), inline=False)
 
         await interaction.response.send_message(embed=embed)
 
@@ -156,12 +167,28 @@ class Minecraft(commands.Cog):
         # Check if server screen is already running
         if os.system("screen -ls | grep -q minecraft") == 0:
             return await interaction.response.send_message(":x: Server is already running!")
-        
+
         # Start server
         command = "screen -dmS minecraft bash -c \"cd ~; ./start.sh > ~/mc_server/server.log\""
         subprocess.Popen(shlex.split(command), start_new_session=True)
 
-        await interaction.response.send_message("IMPORTANT NOTE: Please run `/server_ip` after the server starts, as the original IP will be unavailable till I change it.\n:white_check_mark: Server is being started!")
+        await interaction.response.send_message("IMPORTANT NOTE: Please run `/server_ip` after the server starts, as the `mc.hubowen.dev` will be misconfigured till I change it.\n:white_check_mark: Server is being started!")
+
+    # Stop server
+    @app_commands.command(name="stop_server", description="Stops the server")
+    async def stop_server(self, interaction: discord.Interaction) -> None:
+        # Check if server screen is running
+        if os.system("screen -ls | grep -q minecraft") != 0:
+            return await interaction.response.send_message(":x: Server is not running!")
+
+        # Warn players
+        os.system(
+            "screen -S minecraft -p 0 -X stuff \"say Server will shut down in 1 minute!^M\"")
+
+        # Spawn thread to stop server
+        threading.Thread(target=self.stop_server_thread).start()
+
+        await interaction.response.send_message(":white_check_mark: Server is being stopped!")
 
     # Helper function to check if server is in online mode
     def is_online_mode(self) -> bool:
@@ -172,6 +199,12 @@ class Minecraft(commands.Cog):
                 if line.startswith("online-mode="):
                     return line.split("=")[-1].strip() == "true"
         return None
+
+    # Helper function to stop server
+    def stop_server_thread(self) -> None:
+        """Stops the server"""
+        time.sleep(60)
+        os.system("screen -S minecraft -p 0 -X stuff \"stop^M\"")
 
 
 async def setup(bot: commands.Bot) -> None:
