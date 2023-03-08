@@ -191,7 +191,7 @@ class Minecraft(commands.Cog):
         await interaction.response.send_message(":white_check_mark: Server is being stopped!")
 
     # Helper function to check if server is in online mode
-    def is_online_mode(self) -> bool:
+    def is_online_mode(self) -> bool | None:
         """Checks if server is in online mode"""
         with open("server.properties", "r") as f:
             lines = f.readlines()
