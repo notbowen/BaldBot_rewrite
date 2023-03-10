@@ -26,7 +26,7 @@ class BadWord:
 # Bad word lists
 bad_words = [
     BadWord("N word", [
-        "neger", "negro", "neeger", "nigger", "nigga", "黑鬼", "hei gui"
+        "neger", "negro", "neeger", "nigger", "nigga", "黑鬼", "hei gui", "niger"
     ], [
         "Orh hor say N word I tell mummy",
         "Orh hor say N word u naughty naughty u teasing me",
